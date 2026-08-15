@@ -1,9 +1,14 @@
+import { TABLE_COLUMNS, type ColumnId } from "./columns"
 import { formatDate, formatDateTime, formatMoney } from "./format"
 import type { PageSize, SortKey, SortState, Transaction } from "./transaction"
 import { PAGE_SIZES } from "./transaction"
+import { isColumnEnabled } from "./urlState"
+
+type TableColumn = (typeof TABLE_COLUMNS)[number]
 
 type TransactionTableProps = {
     rows: Transaction[]
+    columns: ColumnId[] | null
     total: number
     page: number
     pageSize: PageSize
@@ -16,6 +21,7 @@ type TransactionTableProps = {
 
 export function TransactionTable({
     rows,
+    columns,
     total,
     page,
     pageSize,
@@ -27,6 +33,9 @@ export function TransactionTable({
 }: TransactionTableProps) {
     const from = total === 0 ? 0 : (page - 1) * pageSize + 1
     const to = Math.min(page * pageSize, total)
+    const visible = TABLE_COLUMNS.filter(column =>
+        isColumnEnabled(columns, column.id),
+    )
 
     return (
         <div className="table-wrap">
@@ -34,79 +43,33 @@ export function TransactionTable({
                 <table>
                     <thead>
                         <tr>
-                            <SortableTh
-                                label="Дата"
-                                column="date"
-                                sort={sort}
-                                onSort={onSort}
-                            />
-                            <th>Создана</th>
-                            <th>Тип</th>
-                            <th>Категория</th>
-                            <SortableTh
-                                label="Расход"
-                                column="expense"
-                                sort={sort}
-                                onSort={onSort}
-                                align="right"
-                            />
-                            <SortableTh
-                                label="Доход"
-                                column="income"
-                                sort={sort}
-                                onSort={onSort}
-                                align="right"
-                            />
-                            <th>Со счёта</th>
-                            <th>На счёт</th>
-                            <SortableTh
-                                label="Плательщик"
-                                column="payer"
-                                sort={sort}
-                                onSort={onSort}
-                            />
-                            <th>Комментарий</th>
+                            {visible.map(column => (
+                                <ColumnHeader
+                                    key={column.id}
+                                    column={column}
+                                    sort={sort}
+                                    onSort={onSort}
+                                />
+                            ))}
                         </tr>
                     </thead>
                     <tbody>
                         {rows.length === 0 ? (
                             <tr>
-                                <td colSpan={10} className="empty">
+                                <td colSpan={visible.length} className="empty">
                                     Нет операций по выбранным фильтрам
                                 </td>
                             </tr>
                         ) : (
                             rows.map(row => (
                                 <tr key={row.id}>
-                                    <td>{formatDate(row.date)}</td>
-                                    <td className="muted">
-                                        {formatDateTime(row.createdAt)}
-                                    </td>
-                                    <td>
-                                        <span
-                                            className={`badge badge-${typeClass(row.type)}`}>
-                                            {row.type || "—"}
-                                        </span>
-                                    </td>
-                                    <td>{row.category || "—"}</td>
-                                    <td className="num expense">
-                                        {formatMoney(
-                                            row.expense,
-                                            row.expenseCurrency,
-                                        )}
-                                    </td>
-                                    <td className="num income">
-                                        {formatMoney(
-                                            row.income,
-                                            row.incomeCurrency,
-                                        )}
-                                    </td>
-                                    <td>{row.fromAccount || "—"}</td>
-                                    <td>{row.toAccount || "—"}</td>
-                                    <td>{row.payer || "—"}</td>
-                                    <td className="comment">
-                                        {row.comment || "—"}
-                                    </td>
+                                    {visible.map(column => (
+                                        <td
+                                            key={column.id}
+                                            className={cellClass(column)}>
+                                            {renderCell(column.id, row)}
+                                        </td>
+                                    ))}
                                 </tr>
                             ))
                         )}
@@ -153,30 +116,83 @@ export function TransactionTable({
     )
 }
 
-function SortableTh({
-    label,
+function ColumnHeader({
     column,
     sort,
     onSort,
-    align,
 }: {
-    label: string
-    column: SortKey
+    column: TableColumn
     sort: SortState
     onSort: (key: SortKey) => void
-    align?: "right"
 }) {
-    const active = sort.key === column
+    if (!("sortKey" in column)) {
+        return <th>{column.label}</th>
+    }
+
+    const active = sort.key === column.sortKey
     const marker = !active ? "" : sort.direction === "asc" ? " ↑" : " ↓"
 
     return (
-        <th className={align === "right" ? "num" : undefined}>
-            <button type="button" onClick={() => onSort(column)}>
-                {label}
+        <th className={"align" in column ? "num" : undefined}>
+            <button type="button" onClick={() => onSort(column.sortKey)}>
+                {column.label}
                 {marker}
             </button>
         </th>
     )
+}
+
+function cellClass(column: TableColumn): string | undefined {
+    if (column.id === "comment") {
+        return "comment"
+    }
+    if (column.id === "createdAt") {
+        return "muted"
+    }
+    if (column.id === "expense") {
+        return "num expense"
+    }
+    if (column.id === "income") {
+        return "num income"
+    }
+
+    return undefined
+}
+
+function renderCell(column: ColumnId, row: Transaction) {
+    if (column === "date") {
+        return formatDate(row.date)
+    }
+    if (column === "createdAt") {
+        return formatDateTime(row.createdAt)
+    }
+    if (column === "type") {
+        return (
+            <span className={`badge badge-${typeClass(row.type)}`}>
+                {row.type || "—"}
+            </span>
+        )
+    }
+    if (column === "category") {
+        return row.category || "—"
+    }
+    if (column === "expense") {
+        return formatMoney(row.expense, row.expenseCurrency)
+    }
+    if (column === "income") {
+        return formatMoney(row.income, row.incomeCurrency)
+    }
+    if (column === "fromAccount") {
+        return row.fromAccount || "—"
+    }
+    if (column === "toAccount") {
+        return row.toAccount || "—"
+    }
+    if (column === "payer") {
+        return row.payer || "—"
+    }
+
+    return row.comment || "—"
 }
 
 function typeClass(type: string): string {

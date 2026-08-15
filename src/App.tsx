@@ -16,11 +16,11 @@ import {
     DEFAULT_SORT,
     type PageSize,
     type SortKey,
-    type SortState,
     type Transaction,
     type TransactionFilters,
 } from "./transaction"
 import { TransactionTable } from "./TransactionTable"
+import { readViewFromUrl, writeViewToUrl } from "./urlState"
 
 import "./App.css"
 
@@ -28,10 +28,9 @@ function App() {
     const [rows, setRows] = useState<Transaction[]>([])
     const [fileName, setFileName] = useState<string | null>(null)
     const [error, setError] = useState<string | null>(null)
-    const [filters, setFilters] = useState<TransactionFilters>(DEFAULT_FILTERS)
-    const [sort, setSort] = useState<SortState>(DEFAULT_SORT)
-    const [page, setPage] = useState(1)
-    const [pageSize, setPageSize] = useState<PageSize>(20)
+    const [view, setView] = useState(readViewFromUrl)
+
+    const { filters, columns, sort, page, pageSize } = view
 
     useEffect(() => {
         let cancelled = false
@@ -55,6 +54,19 @@ function App() {
             cancelled = true
         }
     }, [])
+
+    useEffect(() => {
+        function syncFromUrl() {
+            setView(readViewFromUrl())
+        }
+
+        window.addEventListener("popstate", syncFromUrl)
+        return () => window.removeEventListener("popstate", syncFromUrl)
+    }, [])
+
+    useEffect(() => {
+        writeViewToUrl(view)
+    }, [view])
 
     const options = useMemo(() => collectFilterOptions(rows), [rows])
     const filtered = useMemo(
@@ -90,16 +102,12 @@ function App() {
             setRows(parsed)
             setFileName(file.name)
             setError(null)
-            setFilters(DEFAULT_FILTERS)
-            setSort(DEFAULT_SORT)
-            setPage(1)
+            patchView({ page: 1 })
 
             try {
                 await saveDataset({ fileName: file.name, rows: parsed })
             } catch {
-                setError(
-                    "Файл открыт, но сохранить его в браузере не удалось",
-                )
+                setError("Файл открыт, но сохранить его в браузере не удалось")
             }
         } catch {
             setError("Не удалось прочитать файл")
@@ -107,8 +115,16 @@ function App() {
     }
 
     async function handleClear() {
-        resetView()
+        setRows([])
+        setFileName(null)
         setError(null)
+        patchView({
+            filters: DEFAULT_FILTERS,
+            columns: null,
+            sort: DEFAULT_SORT,
+            page: 1,
+            pageSize: 20,
+        })
 
         try {
             await clearDataset()
@@ -117,46 +133,34 @@ function App() {
         }
     }
 
-    function resetView() {
-        setRows([])
-        setFileName(null)
-        setFilters(DEFAULT_FILTERS)
-        setSort(DEFAULT_SORT)
-        setPage(1)
+    function patchView(next: Partial<typeof view>) {
+        setView(current => ({ ...current, ...next }))
     }
 
     function handleFilters(next: TransactionFilters) {
-        setFilters(next)
-        setPage(1)
+        patchView({ filters: next, page: 1 })
     }
 
     function handleSort(key: SortKey) {
-        setSort(current => {
-            if (current.key === key) {
-                return {
-                    key,
-                    direction: current.direction === "asc" ? "desc" : "asc",
-                }
-            }
+        let direction: "asc" | "desc" = key === "payer" ? "asc" : "desc"
+        if (sort.key === key) {
+            direction = sort.direction === "asc" ? "desc" : "asc"
+        }
 
-            return { key, direction: key === "payer" ? "asc" : "desc" }
-        })
-        setPage(1)
+        patchView({ sort: { key, direction }, page: 1 })
     }
 
     function handlePageSize(size: PageSize) {
-        setPageSize(size)
-        setPage(1)
+        patchView({ pageSize: size, page: 1 })
     }
 
     return (
         <div className="app">
             <header className="header">
                 <div>
-                    <h1>Операции</h1>
+                    <h1>DM Transaction Viewer</h1>
                     <p>
-                        Загрузите CSV с колонками даты, типа, категории, дохода
-                        и расхода.
+                        Загрузите CSV из приложения ДзенМани.
                     </p>
                 </div>
                 {rows.length > 0 ? (
@@ -206,18 +210,21 @@ function App() {
                 <>
                     <FiltersBar
                         filters={filters}
+                        columns={columns}
                         options={options}
                         onChange={handleFilters}
+                        onColumnsChange={next => patchView({ columns: next })}
                     />
                     <TransactionTable
                         rows={pageRows}
+                        columns={columns}
                         total={sorted.length}
                         page={currentPage}
                         pageSize={pageSize}
                         pageCount={pageCount}
                         sort={sort}
                         onSort={handleSort}
-                        onPage={setPage}
+                        onPage={nextPage => patchView({ page: nextPage })}
                         onPageSize={handlePageSize}
                     />
                 </>

@@ -26,9 +26,11 @@ export type SortState = {
 
 export type TransactionFilters = {
     query: string
-    type: string
+    types: string[] | null
     category: string
     account: string
+    dateFrom: string
+    dateTo: string
 }
 
 export const PAGE_SIZES: PageSize[] = [20, 40, 100]
@@ -37,9 +39,11 @@ export const EMPTY_VALUE = "__empty__"
 
 export const DEFAULT_FILTERS: TransactionFilters = {
     query: "",
-    type: "",
+    types: null,
     category: "",
     account: "",
+    dateFrom: "",
+    dateTo: "",
 }
 
 export const DEFAULT_SORT: SortState = {

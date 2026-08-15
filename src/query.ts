@@ -10,6 +10,8 @@ export type FilterOptions = {
     types: string[]
     categories: { value: string; label: string }[]
     accounts: string[]
+    dateMin: string
+    dateMax: string
 }
 
 export type MoneyTotal = {
@@ -28,8 +30,19 @@ export function collectFilterOptions(rows: Transaction[]): FilterOptions {
     const categories = new Set<string>()
     const accounts = new Set<string>()
     let hasEmptyCategory = false
+    let dateMin = ""
+    let dateMax = ""
 
     for (const row of rows) {
+        if (row.date) {
+            if (!dateMin || row.date < dateMin) {
+                dateMin = row.date
+            }
+            if (!dateMax || row.date > dateMax) {
+                dateMax = row.date
+            }
+        }
+
         if (row.type) {
             types.add(row.type)
         }
@@ -63,6 +76,8 @@ export function collectFilterOptions(rows: Transaction[]): FilterOptions {
         types: [...types].sort((a, b) => a.localeCompare(b, "ru")),
         categories: categoryOptions,
         accounts: [...accounts].sort((a, b) => a.localeCompare(b, "ru")),
+        dateMin,
+        dateMax,
     }
 }
 
@@ -74,7 +89,15 @@ export function filterTransactions(
     const result: Transaction[] = []
 
     for (const row of rows) {
-        if (filters.type && row.type !== filters.type) {
+        if (filters.types !== null && !filters.types.includes(row.type)) {
+            continue
+        }
+
+        if (filters.dateFrom && (!row.date || row.date < filters.dateFrom)) {
+            continue
+        }
+
+        if (filters.dateTo && (!row.date || row.date > filters.dateTo)) {
             continue
         }
 
