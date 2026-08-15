@@ -1,13 +1,13 @@
+import { Button } from "@heroui/react"
+
+import { DateRangeField } from "@/shared/ui/date-range-field"
+import { MultiSelect } from "@/shared/ui/multi-select"
+import { SearchField } from "@/shared/ui/search-field"
+
 import { TABLE_COLUMNS, type ColumnId } from "./columns"
 import type { FilterOptions } from "./query"
 import type { TransactionFilters } from "./transaction"
 import { DEFAULT_FILTERS } from "./transaction"
-import {
-    isColumnEnabled,
-    isTypeEnabled,
-    toggleColumn,
-    toggleType,
-} from "./urlState"
 
 type FiltersBarProps = {
     filters: TransactionFilters
@@ -27,156 +27,130 @@ export function FiltersBar({
     const hasActive =
         filters.query !== "" ||
         filters.types !== null ||
-        filters.category !== "" ||
-        filters.account !== "" ||
+        filters.categories !== null ||
+        filters.accounts !== null ||
         filters.dateFrom !== "" ||
-        filters.dateTo !== ""
+        filters.dateTo !== "" ||
+        columns !== null
+
+    const selectedTypes = filters.types ?? options.types
+    const selectedCategories =
+        filters.categories ?? options.categories.map(category => category.value)
+    const selectedAccounts = filters.accounts ?? options.accounts
+    const selectedColumns = columns ?? TABLE_COLUMNS.map(column => column.id)
 
     return (
-        <div className="filters">
-            <div className="toggle-group">
-                <span className="filters-caption">Типы</span>
-                <div className="type-toggles" role="group" aria-label="Типы">
-                    {options.types.map(type => {
-                        const enabled = isTypeEnabled(filters.types, type)
+        <aside className="aside">
+            <SearchField
+                variant="secondary"
+                label="Поиск"
+                value={filters.query}
+                placeholder="Плательщик, комментарий, счёт"
+                onChange={query => onChange({ ...filters, query })}
+            />
 
-                        return (
-                            <button
-                                key={type}
-                                type="button"
-                                className="type-toggle"
-                                aria-pressed={enabled}
-                                onClick={() =>
-                                    onChange({
-                                        ...filters,
-                                        types: toggleType(
-                                            filters.types,
-                                            type,
-                                            options.types,
-                                        ),
-                                    })
-                                }>
-                                {type}
-                            </button>
-                        )
-                    })}
-                </div>
-            </div>
-            <div className="toggle-group">
-                <span className="filters-caption">Колонки</span>
-                <div className="type-toggles" role="group" aria-label="Колонки">
-                    {TABLE_COLUMNS.map(column => {
-                        const enabled = isColumnEnabled(columns, column.id)
-                        const visibleCount =
-                            columns === null
-                                ? TABLE_COLUMNS.length
-                                : columns.length
+            <MultiSelect
+                variant="secondary"
+                label="Типы"
+                placeholder="Все типы"
+                options={options.types.map(type => ({
+                    id: type,
+                    label: type,
+                }))}
+                value={selectedTypes}
+                onChange={value =>
+                    onChange({
+                        ...filters,
+                        types: toFilterList(value, options.types),
+                    })
+                }
+            />
 
-                        return (
-                            <button
-                                key={column.id}
-                                type="button"
-                                className="type-toggle"
-                                aria-pressed={enabled}
-                                disabled={enabled && visibleCount === 1}
-                                onClick={() =>
-                                    onColumnsChange(
-                                        toggleColumn(columns, column.id),
-                                    )
-                                }>
-                                {column.label}
-                            </button>
-                        )
-                    })}
-                </div>
-            </div>
-            <div className="filters-row">
-                <label>
-                    С
-                    <input
-                        type="date"
-                        value={filters.dateFrom}
-                        min={options.dateMin}
-                        max={filters.dateTo || options.dateMax}
-                        onChange={event =>
-                            onChange({
-                                ...filters,
-                                dateFrom: event.target.value,
-                            })
-                        }
-                    />
-                </label>
-                <label>
-                    По
-                    <input
-                        type="date"
-                        value={filters.dateTo}
-                        min={filters.dateFrom || options.dateMin}
-                        max={options.dateMax}
-                        onChange={event =>
-                            onChange({
-                                ...filters,
-                                dateTo: event.target.value,
-                            })
-                        }
-                    />
-                </label>
-                <label>
-                    Поиск
-                    <input
-                        type="search"
-                        value={filters.query}
-                        placeholder="Плательщик, комментарий, счёт"
-                        onChange={event =>
-                            onChange({ ...filters, query: event.target.value })
-                        }
-                    />
-                </label>
-                <label>
-                    Категория
-                    <select
-                        value={filters.category}
-                        onChange={event =>
-                            onChange({
-                                ...filters,
-                                category: event.target.value,
-                            })
-                        }>
-                        <option value="">Все категории</option>
-                        {options.categories.map(category => (
-                            <option key={category.value} value={category.value}>
-                                {category.label}
-                            </option>
-                        ))}
-                    </select>
-                </label>
-                <label>
-                    Счёт
-                    <select
-                        value={filters.account}
-                        onChange={event =>
-                            onChange({
-                                ...filters,
-                                account: event.target.value,
-                            })
-                        }>
-                        <option value="">Все счета</option>
-                        {options.accounts.map(account => (
-                            <option key={account} value={account}>
-                                {account}
-                            </option>
-                        ))}
-                    </select>
-                </label>
-                {hasActive ? (
-                    <button
-                        type="button"
-                        className="ghost"
-                        onClick={() => onChange(DEFAULT_FILTERS)}>
-                        Сбросить
-                    </button>
-                ) : null}
-            </div>
-        </div>
+            <MultiSelect
+                variant="secondary"
+                label="Колонки"
+                placeholder="Колонки"
+                minCount={1}
+                options={TABLE_COLUMNS.map(column => ({
+                    id: column.id,
+                    label: column.label,
+                }))}
+                value={selectedColumns}
+                onChange={value =>
+                    onColumnsChange(
+                        value.length === TABLE_COLUMNS.length
+                            ? null
+                            : (value as ColumnId[]),
+                    )
+                }
+            />
+
+            <DateRangeField
+                variant="secondary"
+                dateFrom={filters.dateFrom}
+                dateTo={filters.dateTo}
+                onChange={next => onChange({ ...filters, ...next })}
+            />
+
+            <MultiSelect
+                variant="secondary"
+                label="Категории"
+                placeholder="Все категории"
+                options={options.categories.map(category => ({
+                    id: category.value,
+                    label: category.label,
+                }))}
+                value={selectedCategories}
+                onChange={value =>
+                    onChange({
+                        ...filters,
+                        categories: toFilterList(
+                            value,
+                            options.categories.map(category => category.value),
+                        ),
+                    })
+                }
+            />
+
+            <MultiSelect
+                variant="secondary"
+                label="Счета"
+                placeholder="Все счета"
+                options={options.accounts.map(account => ({
+                    id: account,
+                    label: account,
+                }))}
+                value={selectedAccounts}
+                onChange={value =>
+                    onChange({
+                        ...filters,
+                        accounts: toFilterList(value, options.accounts),
+                    })
+                }
+            />
+
+            {hasActive ? (
+                <Button
+                    fullWidth
+                    variant="secondary"
+                    onPress={() => {
+                        onChange(DEFAULT_FILTERS)
+                        onColumnsChange(null)
+                    }}>
+                    Сбросить
+                </Button>
+            ) : null}
+        </aside>
     )
+}
+
+function toFilterList(value: string[], all: string[]): string[] | null {
+    if (
+        value.length === all.length &&
+        all.every(item => value.includes(item))
+    ) {
+        return null
+    }
+
+    return value
 }

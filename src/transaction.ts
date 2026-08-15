@@ -27,8 +27,8 @@ export type SortState = {
 export type TransactionFilters = {
     query: string
     types: string[] | null
-    category: string
-    account: string
+    categories: string[] | null
+    accounts: string[] | null
     dateFrom: string
     dateTo: string
 }
@@ -40,8 +40,8 @@ export const EMPTY_VALUE = "__empty__"
 export const DEFAULT_FILTERS: TransactionFilters = {
     query: "",
     types: null,
-    category: "",
-    account: "",
+    categories: null,
+    accounts: null,
     dateFrom: "",
     dateTo: "",
 }

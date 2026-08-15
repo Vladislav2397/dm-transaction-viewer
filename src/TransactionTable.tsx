@@ -1,6 +1,11 @@
+import type { SortDescriptor } from "@heroui/react"
+import { Chip, Pagination, Table } from "@heroui/react"
+
+import { Select } from "@/shared/ui/select"
+
 import { TABLE_COLUMNS, type ColumnId } from "./columns"
 import { formatDate, formatMoney } from "./format"
-import type { PageSize, SortKey, SortState, Transaction } from "./transaction"
+import type { PageSize, SortState, Transaction } from "./transaction"
 import { PAGE_SIZES } from "./transaction"
 import { isColumnEnabled } from "./urlState"
 
@@ -14,7 +19,7 @@ type TransactionTableProps = {
     pageSize: PageSize
     pageCount: number
     sort: SortState
-    onSort: (key: SortKey) => void
+    onSort: (next: SortState) => void
     onPage: (page: number) => void
     onPageSize: (size: PageSize) => void
 }
@@ -36,121 +41,144 @@ export function TransactionTable({
     const visible = TABLE_COLUMNS.filter(column =>
         isColumnEnabled(columns, column.id),
     )
+    const pages = paginationItems(page, pageCount)
 
     return (
-        <div className="table-wrap">
-            <div className="table-scroll">
-                <table>
-                    <thead>
-                        <tr>
-                            {visible.map(column => (
-                                <ColumnHeader
-                                    key={column.id}
-                                    column={column}
-                                    sort={sort}
-                                    onSort={onSort}
-                                />
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {rows.length === 0 ? (
-                            <tr>
-                                <td colSpan={visible.length} className="empty">
-                                    Нет операций по выбранным фильтрам
-                                </td>
-                            </tr>
-                        ) : (
-                            rows.map(row => (
-                                <tr key={row.id}>
-                                    {visible.map(column => (
-                                        <td
-                                            key={column.id}
-                                            className={cellClass(column)}>
-                                            {renderCell(column.id, row)}
-                                        </td>
-                                    ))}
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
-            </div>
-            <div className="pagination">
-                <span>
-                    {from}–{to} из {total}
-                </span>
-                <label>
-                    Строк
-                    <select
-                        value={pageSize}
-                        onChange={event =>
-                            onPageSize(Number(event.target.value) as PageSize)
-                        }>
-                        {PAGE_SIZES.map(size => (
-                            <option key={size} value={size}>
-                                {size}
-                            </option>
+        <Table className="w-full">
+            <Table.ScrollContainer>
+                <Table.Content
+                    aria-label="Операции"
+                    className="min-w-[720px]"
+                    sortDescriptor={toSortDescriptor(sort)}
+                    onSortChange={descriptor => {
+                        const next = fromSortDescriptor(descriptor)
+                        if (next) {
+                            onSort(next)
+                        }
+                    }}>
+                    <Table.Header>
+                        {visible.map((column, index) => (
+                            <ColumnHeader
+                                key={column.id}
+                                column={column}
+                                isRowHeader={index === 0}
+                            />
                         ))}
-                    </select>
-                </label>
-                <div className="pager">
-                    <button
-                        type="button"
-                        disabled={page <= 1}
-                        onClick={() => onPage(page - 1)}>
-                        Назад
-                    </button>
-                    <span>
-                        {page} / {Math.max(pageCount, 1)}
-                    </span>
-                    <button
-                        type="button"
-                        disabled={page >= pageCount}
-                        onClick={() => onPage(page + 1)}>
-                        Вперёд
-                    </button>
-                </div>
-            </div>
-        </div>
+                    </Table.Header>
+                    <Table.Body
+                        items={rows}
+                        renderEmptyState={() =>
+                            "Нет операций по выбранным фильтрам"
+                        }>
+                        {row => (
+                            <Table.Row id={row.id}>
+                                {visible.map(column => (
+                                    <Table.Cell
+                                        key={column.id}
+                                        className={cellClass(column)}>
+                                        {renderCell(column.id, row)}
+                                    </Table.Cell>
+                                ))}
+                            </Table.Row>
+                        )}
+                    </Table.Body>
+                </Table.Content>
+            </Table.ScrollContainer>
+            <Table.Footer>
+                <Pagination className="w-full" size="sm">
+                    <Pagination.Summary>
+                        {from}–{to} из {total}
+                    </Pagination.Summary>
+                    <div className="w-28">
+                        <Select
+                            label=""
+                            value={String(pageSize)}
+                            options={PAGE_SIZES.map(size => ({
+                                id: String(size),
+                                label: String(size),
+                            }))}
+                            onChange={value =>
+                                onPageSize(Number(value) as PageSize)
+                            }
+                        />
+                    </div>
+                    <Pagination.Content>
+                        <Pagination.Item>
+                            <Pagination.Previous
+                                isDisabled={page <= 1}
+                                onPress={() => onPage(page - 1)}>
+                                <Pagination.PreviousIcon />
+                                Назад
+                            </Pagination.Previous>
+                        </Pagination.Item>
+                        {pages.map((item, index) =>
+                            item === "ellipsis" ? (
+                                <Pagination.Item key={`e-${index}`}>
+                                    <Pagination.Ellipsis />
+                                </Pagination.Item>
+                            ) : (
+                                <Pagination.Item key={item}>
+                                    <Pagination.Link
+                                        isActive={item === page}
+                                        onPress={() => onPage(item)}>
+                                        {item}
+                                    </Pagination.Link>
+                                </Pagination.Item>
+                            ),
+                        )}
+                        <Pagination.Item>
+                            <Pagination.Next
+                                isDisabled={page >= pageCount}
+                                onPress={() => onPage(page + 1)}>
+                                Вперёд
+                                <Pagination.NextIcon />
+                            </Pagination.Next>
+                        </Pagination.Item>
+                    </Pagination.Content>
+                </Pagination>
+            </Table.Footer>
+        </Table>
     )
 }
 
 function ColumnHeader({
     column,
-    sort,
-    onSort,
+    isRowHeader,
 }: {
     column: TableColumn
-    sort: SortState
-    onSort: (key: SortKey) => void
+    isRowHeader: boolean
 }) {
     if (!("sortKey" in column)) {
-        return <th>{column.label}</th>
+        return (
+            <Table.Column id={column.id} isRowHeader={isRowHeader}>
+                {column.label}
+            </Table.Column>
+        )
     }
 
-    const active = sort.key === column.sortKey
-    const marker = !active ? "" : sort.direction === "asc" ? " ↑" : " ↓"
-
     return (
-        <th className={"align" in column ? "num" : undefined}>
-            <button type="button" onClick={() => onSort(column.sortKey)}>
-                {column.label}
-                {marker}
-            </button>
-        </th>
+        <Table.Column
+            allowsSorting
+            id={column.sortKey}
+            isRowHeader={isRowHeader}>
+            {({ sortDirection }) => (
+                <Table.SortableColumnHeader sortDirection={sortDirection}>
+                    {column.label}
+                </Table.SortableColumnHeader>
+            )}
+        </Table.Column>
     )
 }
 
 function cellClass(column: TableColumn): string | undefined {
     if (column.id === "comment") {
-        return "comment"
+        return "max-w-60 whitespace-normal"
     }
     if (column.id === "expense") {
-        return "num expense"
+        return "text-right tabular-nums text-danger"
     }
     if (column.id === "income") {
-        return "num income"
+        return "text-right tabular-nums text-success"
     }
 
     return undefined
@@ -162,9 +190,9 @@ function renderCell(column: ColumnId, row: Transaction) {
     }
     if (column === "type") {
         return (
-            <span className={`badge badge-${typeClass(row.type)}`}>
+            <Chip color={typeColor(row.type)} size="sm" variant="soft">
                 {row.type || "—"}
-            </span>
+            </Chip>
         )
     }
     if (column === "category") {
@@ -189,12 +217,65 @@ function renderCell(column: ColumnId, row: Transaction) {
     return row.comment || "—"
 }
 
-function typeClass(type: string): string {
+function typeColor(type: string): "success" | "danger" | "accent" {
     if (type === "Доход") {
-        return "income"
+        return "success"
     }
     if (type === "Расход") {
-        return "expense"
+        return "danger"
     }
-    return "transfer"
+
+    return "accent"
+}
+
+function toSortDescriptor(sort: SortState): SortDescriptor {
+    return {
+        column: sort.key,
+        direction: sort.direction === "asc" ? "ascending" : "descending",
+    }
+}
+
+function fromSortDescriptor(descriptor: SortDescriptor): SortState | null {
+    const key = String(descriptor.column)
+    if (
+        key !== "date" &&
+        key !== "income" &&
+        key !== "expense" &&
+        key !== "payer"
+    ) {
+        return null
+    }
+
+    return {
+        key,
+        direction: descriptor.direction === "ascending" ? "asc" : "desc",
+    }
+}
+
+function paginationItems(
+    current: number,
+    total: number,
+): Array<number | "ellipsis"> {
+    if (total <= 7) {
+        return Array.from({ length: total }, (_, index) => index + 1)
+    }
+
+    const start = Math.max(2, current - 1)
+    const end = Math.min(total - 1, current + 1)
+    const items: Array<number | "ellipsis"> = [1]
+
+    if (start > 2) {
+        items.push("ellipsis")
+    }
+
+    for (let page = start; page <= end; page += 1) {
+        items.push(page)
+    }
+
+    if (end < total - 1) {
+        items.push("ellipsis")
+    }
+
+    items.push(total)
+    return items
 }

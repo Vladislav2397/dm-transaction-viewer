@@ -24,6 +24,8 @@ const SORT_KEYS = new Set<SortKey>(["date", "income", "expense", "payer"])
 export function readViewFromUrl(search = window.location.search): ViewState {
     const params = new URLSearchParams(search)
     const typesParam = params.get("types")
+    const categoriesParam = params.get("categories") ?? params.get("category")
+    const accountsParam = params.get("accounts") ?? params.get("account")
     const columnsParam = params.get("cols")
     const sortKey = params.get("sort")
     const direction = params.get("dir")
@@ -34,8 +36,10 @@ export function readViewFromUrl(search = window.location.search): ViewState {
         filters: {
             query: params.get("q") ?? "",
             types: typesParam === null ? null : splitList(typesParam),
-            category: params.get("category") ?? "",
-            account: params.get("account") ?? "",
+            categories:
+                categoriesParam === null ? null : splitList(categoriesParam),
+            accounts:
+                accountsParam === null ? null : splitList(accountsParam),
             dateFrom: params.get("from") ?? "",
             dateTo: params.get("to") ?? "",
         },
@@ -73,11 +77,11 @@ export function serializeView(view: ViewState): URLSearchParams {
     if (filters.types !== null) {
         params.set("types", filters.types.join(","))
     }
-    if (filters.category) {
-        params.set("category", filters.category)
+    if (filters.categories !== null) {
+        params.set("categories", filters.categories.join(","))
     }
-    if (filters.account) {
-        params.set("account", filters.account)
+    if (filters.accounts !== null) {
+        params.set("accounts", filters.accounts.join(","))
     }
     if (filters.dateFrom) {
         params.set("from", filters.dateFrom)

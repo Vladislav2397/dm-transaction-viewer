@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 
+import { ThemeSwitcher } from "@/shared/ui/theme-switcher"
+
 import { CsvDropzone } from "./CsvDropzone"
 import { parseCsvText } from "./csv"
 import { FiltersBar } from "./FiltersBar"
@@ -15,7 +17,7 @@ import {
     DEFAULT_FILTERS,
     DEFAULT_SORT,
     type PageSize,
-    type SortKey,
+    type SortState,
     type Transaction,
     type TransactionFilters,
 } from "./transaction"
@@ -141,13 +143,8 @@ function App() {
         patchView({ filters: next, page: 1 })
     }
 
-    function handleSort(key: SortKey) {
-        let direction: "asc" | "desc" = key === "payer" ? "asc" : "desc"
-        if (sort.key === key) {
-            direction = sort.direction === "asc" ? "desc" : "asc"
-        }
-
-        patchView({ sort: { key, direction }, page: 1 })
+    function handleSort(next: SortState) {
+        patchView({ sort: next, page: 1 })
     }
 
     function handlePageSize(size: PageSize) {
@@ -156,65 +153,59 @@ function App() {
 
     return (
         <div className="app">
-            <header className="header">
-                <div>
-                    <h1>DM Transaction Viewer</h1>
-                    <p>
-                        Загрузите CSV из приложения ДзенМани.
-                    </p>
-                </div>
+            <main className="main">
+                <header className="header">
+                    <div>
+                        <h1>DM Transaction Viewer</h1>
+                        <p>Загрузите CSV из приложения ДзенМани.</p>
+                    </div>
+                    <div className="header-actions">
+                        {rows.length > 0 ? (
+                            <dl className="stats">
+                                <div>
+                                    <dt>Строк</dt>
+                                    <dd>{summary.count}</dd>
+                                </div>
+                                <div>
+                                    <dt>Доход</dt>
+                                    <dd className="income">
+                                        {summary.income.map(item => (
+                                            <span key={`in-${item.currency}`}>
+                                                {formatMoney(
+                                                    item.amount,
+                                                    item.currency,
+                                                )}
+                                            </span>
+                                        ))}
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt>Расход</dt>
+                                    <dd className="expense">
+                                        {summary.expense.map(item => (
+                                            <span key={`ex-${item.currency}`}>
+                                                {formatMoney(
+                                                    item.amount,
+                                                    item.currency,
+                                                )}
+                                            </span>
+                                        ))}
+                                    </dd>
+                                </div>
+                            </dl>
+                        ) : null}
+                        <ThemeSwitcher />
+                    </div>
+                </header>
+
+                <CsvDropzone
+                    fileName={fileName}
+                    error={error}
+                    onFile={handleFile}
+                    onClear={handleClear}
+                />
+
                 {rows.length > 0 ? (
-                    <dl className="stats">
-                        <div>
-                            <dt>Строк</dt>
-                            <dd>{summary.count}</dd>
-                        </div>
-                        <div>
-                            <dt>Доход</dt>
-                            <dd className="income">
-                                {summary.income.map(item => (
-                                    <span key={`in-${item.currency}`}>
-                                        {formatMoney(
-                                            item.amount,
-                                            item.currency,
-                                        )}
-                                    </span>
-                                ))}
-                            </dd>
-                        </div>
-                        <div>
-                            <dt>Расход</dt>
-                            <dd className="expense">
-                                {summary.expense.map(item => (
-                                    <span key={`ex-${item.currency}`}>
-                                        {formatMoney(
-                                            item.amount,
-                                            item.currency,
-                                        )}
-                                    </span>
-                                ))}
-                            </dd>
-                        </div>
-                    </dl>
-                ) : null}
-            </header>
-
-            <CsvDropzone
-                fileName={fileName}
-                error={error}
-                onFile={handleFile}
-                onClear={handleClear}
-            />
-
-            {rows.length > 0 ? (
-                <>
-                    <FiltersBar
-                        filters={filters}
-                        columns={columns}
-                        options={options}
-                        onChange={handleFilters}
-                        onColumnsChange={next => patchView({ columns: next })}
-                    />
                     <TransactionTable
                         rows={pageRows}
                         columns={columns}
@@ -227,8 +218,16 @@ function App() {
                         onPage={nextPage => patchView({ page: nextPage })}
                         onPageSize={handlePageSize}
                     />
-                </>
-            ) : null}
+                ) : null}
+            </main>
+
+            <FiltersBar
+                filters={filters}
+                columns={columns}
+                options={options}
+                onChange={handleFilters}
+                onColumnsChange={next => patchView({ columns: next })}
+            />
         </div>
     )
 }

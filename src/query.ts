@@ -101,18 +101,17 @@ export function filterTransactions(
             continue
         }
 
-        if (filters.category === EMPTY_VALUE) {
-            if (row.category) {
+        if (filters.categories !== null) {
+            const category = row.category || EMPTY_VALUE
+            if (!filters.categories.includes(category)) {
                 continue
             }
-        } else if (filters.category && row.category !== filters.category) {
-            continue
         }
 
         if (
-            filters.account &&
-            row.fromAccount !== filters.account &&
-            row.toAccount !== filters.account
+            filters.accounts !== null &&
+            !filters.accounts.includes(row.fromAccount) &&
+            !filters.accounts.includes(row.toAccount)
         ) {
             continue
         }
