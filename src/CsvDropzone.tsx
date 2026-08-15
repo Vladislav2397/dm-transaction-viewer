@@ -2,9 +2,15 @@ type CsvDropzoneProps = {
     fileName: string | null
     error: string | null
     onFile: (file: File) => void
+    onClear: () => void
 }
 
-export function CsvDropzone({ fileName, error, onFile }: CsvDropzoneProps) {
+export function CsvDropzone({
+    fileName,
+    error,
+    onFile,
+    onClear,
+}: CsvDropzoneProps) {
     function handleFiles(files: FileList | null) {
         const file = files?.[0]
         if (file) {
@@ -30,13 +36,25 @@ export function CsvDropzone({ fileName, error, onFile }: CsvDropzoneProps) {
             />
             <strong>Загрузить CSV</strong>
             <span>
-                Перетащите файл сюда или нажмите, чтобы выбрать. Формат как в
-                example.csv.
+                Перетащите файл сюда или нажмите, чтобы выбрать. Данные
+                сохраняются в этом браузере и не пропадут после перезагрузки.
             </span>
             {fileName ? (
-                <span className="dropzone-file">Текущий файл: {fileName}</span>
+                <span className="dropzone-file">Сохранено: {fileName}</span>
             ) : null}
             {error ? <span className="dropzone-error">{error}</span> : null}
+            {fileName ? (
+                <button
+                    type="button"
+                    className="ghost dropzone-clear"
+                    onClick={event => {
+                        event.preventDefault()
+                        event.stopPropagation()
+                        onClear()
+                    }}>
+                    Удалить сохранённые данные
+                </button>
+            ) : null}
         </label>
     )
 }

@@ -30,7 +30,8 @@ export function TransactionTable({
 
     return (
         <div className="table-wrap">
-            <table>
+            <div className="table-scroll">
+                <table>
                     <thead>
                         <tr>
                             <SortableTh
@@ -111,6 +112,7 @@ export function TransactionTable({
                         )}
                     </tbody>
                 </table>
+            </div>
             <div className="pagination">
                 <span>
                     {from}–{to} из {total}

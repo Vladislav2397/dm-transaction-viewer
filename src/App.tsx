@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import { CsvDropzone } from "./CsvDropzone"
 import { parseCsvText } from "./csv"
@@ -10,6 +10,7 @@ import {
     sortTransactions,
     summarize,
 } from "./query"
+import { clearDataset, loadDataset, saveDataset } from "./storage"
 import {
     DEFAULT_FILTERS,
     DEFAULT_SORT,
@@ -31,6 +32,29 @@ function App() {
     const [sort, setSort] = useState<SortState>(DEFAULT_SORT)
     const [page, setPage] = useState(1)
     const [pageSize, setPageSize] = useState<PageSize>(20)
+
+    useEffect(() => {
+        let cancelled = false
+
+        loadDataset()
+            .then(dataset => {
+                if (cancelled || !dataset) {
+                    return
+                }
+
+                setRows(dataset.rows)
+                setFileName(dataset.fileName)
+            })
+            .catch(() => {
+                if (!cancelled) {
+                    setError("Не удалось прочитать сохранённые данные")
+                }
+            })
+
+        return () => {
+            cancelled = true
+        }
+    }, [])
 
     const options = useMemo(() => collectFilterOptions(rows), [rows])
     const filtered = useMemo(
@@ -60,8 +84,6 @@ function App() {
             const parsed = parseCsvText(text)
             if (parsed.length === 0) {
                 setError("В файле нет строк с операциями")
-                setRows([])
-                setFileName(file.name)
                 return
             }
 
@@ -71,9 +93,36 @@ function App() {
             setFilters(DEFAULT_FILTERS)
             setSort(DEFAULT_SORT)
             setPage(1)
+
+            try {
+                await saveDataset({ fileName: file.name, rows: parsed })
+            } catch {
+                setError(
+                    "Файл открыт, но сохранить его в браузере не удалось",
+                )
+            }
         } catch {
             setError("Не удалось прочитать файл")
         }
+    }
+
+    async function handleClear() {
+        resetView()
+        setError(null)
+
+        try {
+            await clearDataset()
+        } catch {
+            setError("Не удалось удалить сохранённые данные")
+        }
+    }
+
+    function resetView() {
+        setRows([])
+        setFileName(null)
+        setFilters(DEFAULT_FILTERS)
+        setSort(DEFAULT_SORT)
+        setPage(1)
     }
 
     function handleFilters(next: TransactionFilters) {
@@ -150,6 +199,7 @@ function App() {
                 fileName={fileName}
                 error={error}
                 onFile={handleFile}
+                onClear={handleClear}
             />
 
             {rows.length > 0 ? (
