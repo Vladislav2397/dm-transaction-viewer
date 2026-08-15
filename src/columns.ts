@@ -1,6 +1,5 @@
 export const TABLE_COLUMNS = [
     { id: "date", label: "Дата", sortKey: "date" },
-    { id: "createdAt", label: "Создана" },
     { id: "type", label: "Тип" },
     { id: "category", label: "Категория" },
     { id: "expense", label: "Расход", sortKey: "expense", align: "right" },

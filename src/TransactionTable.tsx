@@ -1,5 +1,5 @@
 import { TABLE_COLUMNS, type ColumnId } from "./columns"
-import { formatDate, formatDateTime, formatMoney } from "./format"
+import { formatDate, formatMoney } from "./format"
 import type { PageSize, SortKey, SortState, Transaction } from "./transaction"
 import { PAGE_SIZES } from "./transaction"
 import { isColumnEnabled } from "./urlState"
@@ -146,9 +146,6 @@ function cellClass(column: TableColumn): string | undefined {
     if (column.id === "comment") {
         return "comment"
     }
-    if (column.id === "createdAt") {
-        return "muted"
-    }
     if (column.id === "expense") {
         return "num expense"
     }
@@ -162,9 +159,6 @@ function cellClass(column: TableColumn): string | undefined {
 function renderCell(column: ColumnId, row: Transaction) {
     if (column === "date") {
         return formatDate(row.date)
-    }
-    if (column === "createdAt") {
-        return formatDateTime(row.createdAt)
     }
     if (column === "type") {
         return (

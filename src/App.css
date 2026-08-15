@@ -224,10 +224,6 @@ td.comment {
     font-variant-numeric: tabular-nums;
 }
 
-.muted {
-    color: var(--text);
-}
-
 .empty {
     text-align: center;
     padding: 32px;
