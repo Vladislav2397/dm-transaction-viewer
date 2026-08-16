@@ -12,9 +12,73 @@
     margin-right: 264px;
 }
 
+.app-nav {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--background);
+}
+
+.app-nav-link {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.app-nav-link.is-active {
+    color: var(--foreground);
+}
+
+.app-nav-spacer {
+    flex: 1;
+}
+
+.home {
+    max-width: 760px;
+    padding: 40px 24px;
+}
+
+.home-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.home-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+}
+
+.auth-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+    border: 1px dashed var(--accent-soft-foreground);
+    border-radius: 10px;
+    background: var(--accent-soft);
+}
+
+.zenmoney-actions {
+    display: flex;
+    gap: 8px;
+}
+
 .aside {
     position: fixed;
-    top: 0;
+    top: 57px;
     right: 0;
     z-index: 20;
     box-sizing: border-box;
@@ -22,7 +86,7 @@
     flex-direction: column;
     gap: 14px;
     width: 264px;
-    height: 100svh;
+    height: calc(100svh - 57px);
     padding: 20px 16px 24px;
     border-left: 1px solid var(--border);
     background: var(--surface);

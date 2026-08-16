@@ -15,4 +15,13 @@ export default defineConfig({
             "@": path.resolve(root, "src"),
         },
     },
+    server: {
+        proxy: {
+            "/zenmoney": {
+                target: "https://api.zenmoney.ru",
+                changeOrigin: true,
+                rewrite: proxyPath => proxyPath.replace(/^\/zenmoney/, ""),
+            },
+        },
+    },
 })

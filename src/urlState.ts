@@ -56,15 +56,22 @@ export function readViewFromUrl(search = window.location.search): ViewState {
     }
 }
 
-export function writeViewToUrl(view: ViewState) {
-    const params = serializeView(view)
-    const query = params.toString()
-    const next = `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`
-    const current = `${window.location.pathname}${window.location.search}${window.location.hash}`
+export function parseViewSearch(
+    search: Record<string, unknown>,
+): ViewState {
+    const params = new URLSearchParams()
 
-    if (next !== current) {
-        window.history.replaceState(null, "", next)
+    for (const [key, value] of Object.entries(search)) {
+        if (typeof value === "string" && value !== "") {
+            params.set(key, value)
+        }
     }
+
+    return readViewFromUrl(`?${params.toString()}`)
+}
+
+export function viewToSearch(view: ViewState): Record<string, string> {
+    return Object.fromEntries(serializeView(view).entries())
 }
 
 export function serializeView(view: ViewState): URLSearchParams {

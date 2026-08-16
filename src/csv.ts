@@ -34,7 +34,7 @@ export function parseCsvText(text: string): Transaction[] {
         }
 
         transactions.push({
-            id: i,
+            id: String(i),
             date: cell(cells, headerMap.date),
             createdAt: cell(cells, headerMap.createdAt),
             type: cell(cells, headerMap.type),
