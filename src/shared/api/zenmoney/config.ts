@@ -10,7 +10,8 @@ export const ZENMONEY_CLIENT_SECRET =
     import.meta.env.VITE_ZENMONEY_CLIENT_SECRET ?? ""
 
 export function getRedirectUri() {
-    return `${window.location.origin}/auth/callback`
+    const base = import.meta.env.BASE_URL.replace(/\/$/, "")
+    return `${window.location.origin}${base}/auth/callback`
 }
 
 export function isOAuthConfigured() {

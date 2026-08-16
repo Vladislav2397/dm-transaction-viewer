@@ -1,9 +1,10 @@
+import { copyFileSync, existsSync } from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
 import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
-import { defineConfig } from "vite"
+import { defineConfig, type Plugin } from "vite"
 
 const root = fileURLToPath(new URL(".", import.meta.url))
 
@@ -18,7 +19,8 @@ const zenmoneyProxy = {
 
 export default defineConfig({
     appType: "spa",
-    plugins: [react(), tailwindcss()],
+    base: "/dm-transaction-viewer/",
+    plugins: [react(), tailwindcss(), githubPagesSpaFallback()],
     resolve: {
         alias: {
             "@": path.resolve(root, "src"),
@@ -31,3 +33,15 @@ export default defineConfig({
         proxy: zenmoneyProxy,
     },
 })
+
+function githubPagesSpaFallback(): Plugin {
+    return {
+        name: "github-pages-spa-fallback",
+        closeBundle() {
+            const index = path.resolve(root, "dist/index.html")
+            if (existsSync(index)) {
+                copyFileSync(index, path.resolve(root, "dist/404.html"))
+            }
+        },
+    }
+}
