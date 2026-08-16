@@ -5,9 +5,8 @@ import {
 } from "@tanstack/react-router"
 
 import { RootLayout } from "@/app/layout"
-import { CsvPage } from "@/pages/csv"
 import { HomePage } from "@/pages/home"
-import { AuthCallbackPage, ZenMoneyPage } from "@/pages/zenmoney"
+import { AuthCallbackPage } from "@/pages/zenmoney"
 
 const rootRoute = createRootRoute({
     component: RootLayout,
@@ -17,18 +16,6 @@ const indexRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "/",
     component: HomePage,
-})
-
-const csvRoute = createRoute({
-    getParentRoute: () => rootRoute,
-    path: "/csv",
-    component: CsvPage,
-})
-
-const zenmoneyRoute = createRoute({
-    getParentRoute: () => rootRoute,
-    path: "/zenmoney",
-    component: ZenMoneyPage,
 })
 
 const authCallbackRoute = createRoute({
@@ -42,12 +29,7 @@ const authCallbackRoute = createRoute({
     }),
 })
 
-const routeTree = rootRoute.addChildren([
-    indexRoute,
-    csvRoute,
-    zenmoneyRoute,
-    authCallbackRoute,
-])
+const routeTree = rootRoute.addChildren([indexRoute, authCallbackRoute])
 
 export const router = createRouter({
     routeTree,

@@ -28,3 +28,9 @@ export {
     EMPTY_VALUE,
     PAGE_SIZES,
 } from "./model/types"
+export {
+    clearDataset,
+    loadDataset,
+    saveDataset,
+} from "./lib/storage"
+export type { StoredDataset } from "./lib/storage"

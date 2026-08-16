@@ -1,20 +1,12 @@
-const dateFormatter = new Intl.DateTimeFormat("ru-RU", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-})
+import { formatDate } from "@/shared/lib/format"
 
 export function formatDateLabel(value: string) {
     if (!value) {
         return ""
     }
 
-    const date = new Date(`${value}T00:00:00`)
-    if (Number.isNaN(date.getTime())) {
-        return value
-    }
-
-    return dateFormatter.format(date)
+    const formatted = formatDate(value)
+    return formatted === "—" ? "" : formatted
 }
 
 export function formatRangeLabel(from: string, to: string) {

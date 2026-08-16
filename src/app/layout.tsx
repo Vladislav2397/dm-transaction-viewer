@@ -13,19 +13,7 @@ export function RootLayout() {
                     className="app-nav-link"
                     activeProps={{ className: "app-nav-link is-active" }}
                     activeOptions={{ exact: true }}>
-                    Обзор
-                </Link>
-                <Link
-                    to="/csv"
-                    className="app-nav-link"
-                    activeProps={{ className: "app-nav-link is-active" }}>
-                    CSV
-                </Link>
-                <Link
-                    to="/zenmoney"
-                    className="app-nav-link"
-                    activeProps={{ className: "app-nav-link is-active" }}>
-                    ZenMoney
+                    DM Transaction Viewer
                 </Link>
                 <span className="app-nav-spacer" />
                 <ThemeSwitcher />

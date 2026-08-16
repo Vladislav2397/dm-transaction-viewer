@@ -24,8 +24,8 @@ export function formatMoney(value: number | null, currency = ""): string {
 }
 
 const dateFormatter = new Intl.DateTimeFormat("ru-RU", {
-    day: "2-digit",
-    month: "2-digit",
+    day: "numeric",
+    month: "long",
     year: "numeric",
 })
 
@@ -59,5 +59,13 @@ export function formatDate(value: string): string {
         return value
     }
 
-    return dateFormatter.format(date)
+    const parts = dateFormatter.formatToParts(date)
+    const day = parts.find(part => part.type === "day")?.value
+    const month = parts.find(part => part.type === "month")?.value
+    const year = parts.find(part => part.type === "year")?.value
+    if (!day || !month || !year) {
+        return dateFormatter.format(date)
+    }
+
+    return `${day} ${month} ${year}`
 }

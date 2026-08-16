@@ -34,7 +34,7 @@ export function AuthCallbackPage() {
 
     useEffect(() => {
         if (query.isSuccess) {
-            void navigate({ to: "/zenmoney" })
+            void navigate({ to: "/" })
         }
     }, [navigate, query.isSuccess])
 

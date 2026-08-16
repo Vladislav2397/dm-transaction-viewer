@@ -71,6 +71,24 @@
     background: var(--accent-soft);
 }
 
+.sources {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sources-panels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+}
+
+.sources-meta {
+    margin: 0;
+    font-size: 14px;
+    color: var(--muted);
+}
+
 .zenmoney-actions {
     display: flex;
     gap: 8px;
