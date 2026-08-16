@@ -7,8 +7,17 @@ import { defineConfig } from "vite"
 
 const root = fileURLToPath(new URL(".", import.meta.url))
 
-// https://vite.dev/config/
+const zenmoneyProxy = {
+    "/api/zenmoney": {
+        target: "https://api.zenmoney.ru",
+        changeOrigin: true,
+        rewrite: (proxyPath: string) =>
+            proxyPath.replace(/^\/api\/zenmoney/, ""),
+    },
+}
+
 export default defineConfig({
+    appType: "spa",
     plugins: [react(), tailwindcss()],
     resolve: {
         alias: {
@@ -16,12 +25,9 @@ export default defineConfig({
         },
     },
     server: {
-        proxy: {
-            "/zenmoney": {
-                target: "https://api.zenmoney.ru",
-                changeOrigin: true,
-                rewrite: proxyPath => proxyPath.replace(/^\/zenmoney/, ""),
-            },
-        },
+        proxy: zenmoneyProxy,
+    },
+    preview: {
+        proxy: zenmoneyProxy,
     },
 })

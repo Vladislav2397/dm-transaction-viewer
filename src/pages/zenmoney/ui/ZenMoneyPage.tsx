@@ -2,7 +2,7 @@ import { Button, Input } from "@heroui/react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect, useState } from "react"
 
-import { mapDiffToTransactions } from "@/features/zenmoney-sync/lib/map"
+import { mapDiffToTransactions } from "@/features/zenmoney-sync"
 import {
     clearToken,
     createAuthorizeUrl,

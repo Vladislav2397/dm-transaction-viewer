@@ -1,15 +1,13 @@
 import {
     COLUMN_IDS,
     COLUMN_ID_SET,
-    type ColumnId,
-} from "./columns"
-import {
     PAGE_SIZES,
+    type ColumnId,
     type PageSize,
     type SortKey,
     type SortState,
     type TransactionFilters,
-} from "./transaction"
+} from "@/entities/transaction"
 
 export type ViewState = {
     filters: TransactionFilters

@@ -5,7 +5,7 @@ import {
     parseViewSearch,
     viewToSearch,
     type ViewState,
-} from "@/urlState"
+} from "./urlState"
 
 export function useViewSearch() {
     const search = useSearch({ strict: false })

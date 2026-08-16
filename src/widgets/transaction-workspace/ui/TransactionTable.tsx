@@ -3,11 +3,17 @@ import { Chip, Pagination, Table } from "@heroui/react"
 
 import { Select } from "@/shared/ui/select"
 
-import { TABLE_COLUMNS, type ColumnId } from "./columns"
-import { formatDate, formatMoney } from "./format"
-import type { PageSize, SortState, Transaction } from "./transaction"
-import { PAGE_SIZES } from "./transaction"
-import { isColumnEnabled } from "./urlState"
+import {
+    PAGE_SIZES,
+    TABLE_COLUMNS,
+    type ColumnId,
+    type PageSize,
+    type SortState,
+    type Transaction,
+} from "@/entities/transaction"
+import { formatDate, formatMoney } from "@/shared/lib/format"
+
+import { isColumnEnabled } from "../model/urlState"
 
 type TableColumn = (typeof TABLE_COLUMNS)[number]
 

@@ -2,7 +2,7 @@ import { Link, Outlet } from "@tanstack/react-router"
 
 import { ThemeSwitcher } from "@/shared/ui/theme-switcher"
 
-import "@/App.css"
+import "@/app/styles/App.css"
 
 export function RootLayout() {
     return (

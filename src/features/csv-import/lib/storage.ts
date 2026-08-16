@@ -1,4 +1,4 @@
-import type { Transaction } from "./transaction"
+import type { Transaction } from "@/entities/transaction"
 
 const DB_NAME = "dm-transaction-viewer"
 const DB_VERSION = 1

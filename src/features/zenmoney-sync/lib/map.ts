@@ -1,5 +1,5 @@
 import type { ZenMoneyDiff } from "@/shared/api/zenmoney"
-import type { Transaction } from "@/transaction"
+import type { Transaction } from "@/entities/transaction"
 
 export function mapDiffToTransactions(diff: ZenMoneyDiff): Transaction[] {
     const accounts = new Map(

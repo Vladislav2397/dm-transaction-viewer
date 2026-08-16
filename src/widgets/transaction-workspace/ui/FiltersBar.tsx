@@ -4,10 +4,13 @@ import { DateRangeField } from "@/shared/ui/date-range-field"
 import { MultiSelect } from "@/shared/ui/multi-select"
 import { SearchField } from "@/shared/ui/search-field"
 
-import { TABLE_COLUMNS, type ColumnId } from "./columns"
-import type { FilterOptions } from "./query"
-import type { TransactionFilters } from "./transaction"
-import { DEFAULT_FILTERS } from "./transaction"
+import {
+    DEFAULT_FILTERS,
+    TABLE_COLUMNS,
+    type ColumnId,
+    type FilterOptions,
+    type TransactionFilters,
+} from "@/entities/transaction"
 
 type FiltersBarProps = {
     filters: TransactionFilters

@@ -5,10 +5,9 @@ import {
 } from "@tanstack/react-router"
 
 import { RootLayout } from "@/app/layout"
-import { CsvPage } from "@/pages/csv/ui/CsvPage"
-import { HomePage } from "@/pages/home/ui/HomePage"
-import { AuthCallbackPage } from "@/pages/zenmoney/ui/AuthCallbackPage"
-import { ZenMoneyPage } from "@/pages/zenmoney/ui/ZenMoneyPage"
+import { CsvPage } from "@/pages/csv"
+import { HomePage } from "@/pages/home"
+import { AuthCallbackPage, ZenMoneyPage } from "@/pages/zenmoney"
 
 const rootRoute = createRootRoute({
     component: RootLayout,

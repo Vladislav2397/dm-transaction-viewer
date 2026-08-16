@@ -1,13 +1,17 @@
 import { useEffect, useState } from "react"
 
-import { CsvDropzone } from "@/CsvDropzone"
-import { parseCsvText } from "@/csv"
-import { clearDataset, loadDataset, saveDataset } from "@/storage"
 import {
     DEFAULT_FILTERS,
     DEFAULT_SORT,
     type Transaction,
-} from "@/transaction"
+} from "@/entities/transaction"
+import {
+    clearDataset,
+    CsvDropzone,
+    loadDataset,
+    parseCsvText,
+    saveDataset,
+} from "@/features/csv-import"
 import {
     TransactionWorkspace,
     useViewSearch,

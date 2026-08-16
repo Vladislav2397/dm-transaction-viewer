@@ -1,17 +1,19 @@
-import type { ReactNode } from "react"
+import { useMemo, type ReactNode } from "react"
 
-import { FiltersBar } from "@/FiltersBar"
-import { formatMoney } from "@/format"
 import {
     collectFilterOptions,
     filterTransactions,
     sortTransactions,
     summarize,
-} from "@/query"
-import type { PageSize, Transaction, TransactionFilters } from "@/transaction"
-import { TransactionTable } from "@/TransactionTable"
-import type { ViewState } from "@/urlState"
-import { useMemo } from "react"
+    type PageSize,
+    type Transaction,
+    type TransactionFilters,
+} from "@/entities/transaction"
+import { formatMoney } from "@/shared/lib/format"
+
+import type { ViewState } from "../model/urlState"
+import { FiltersBar } from "./FiltersBar"
+import { TransactionTable } from "./TransactionTable"
 
 type TransactionWorkspaceProps = {
     title: string

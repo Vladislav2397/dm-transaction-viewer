@@ -1,4 +1,4 @@
-import type { Transaction } from "./transaction"
+import type { Transaction } from "@/entities/transaction"
 
 const HEADER_ALIASES: Record<string, keyof Omit<Transaction, "id">> = {
     дата: "date",

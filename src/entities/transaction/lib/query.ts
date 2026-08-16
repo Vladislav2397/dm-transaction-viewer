@@ -1,10 +1,10 @@
-import type {
-    SortKey,
-    SortState,
-    Transaction,
-    TransactionFilters,
-} from "./transaction"
-import { EMPTY_VALUE } from "./transaction"
+import {
+    EMPTY_VALUE,
+    type SortKey,
+    type SortState,
+    type Transaction,
+    type TransactionFilters,
+} from "../model/types"
 
 export type FilterOptions = {
     types: string[]
